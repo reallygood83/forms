@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background -->
+  <rect width="100" height="100" fill="#000000" rx="20"/>
+
+  <!-- Form icon - document with checkmarks -->
+  <g transform="translate(25, 20)">
+    <!-- Document outline -->
+    <rect x="0" y="0" width="50" height="60" fill="white" rx="4"/>
+
+    <!-- Lines representing form fields -->
+    <rect x="8" y="12" width="34" height="4" fill="#2563eb" rx="2"/>
+    <rect x="8" y="24" width="34" height="4" fill="#2563eb" rx="2"/>
+    <rect x="8" y="36" width="34" height="4" fill="#2563eb" rx="2"/>
+    <rect x="8" y="48" width="20" height="4" fill="#2563eb" rx="2"/>
+
+    <!-- Checkmark accent -->
+    <circle cx="40" cy="50" r="8" fill="#2563eb"/>
+    <path d="M 37 50 L 39 52 L 43 48" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

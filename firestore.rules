@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================================
+    // 헬퍼 함수
+    // ========================================
+
+    // 사용자가 인증되었는지 확인
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 요청한 사용자가 해당 이메일의 소유자인지 확인
+    function isOwner(email) {
+      return isSignedIn() && request.auth.token.email == email;
+    }
+
+    // ========================================
+    // users 컬렉션 규칙
+    // ========================================
+
+    match /users/{email} {
+      // users 문서 자체는 읽기/쓰기 불가 (하위 컬렉션만 사용)
+      allow read, write: if false;
+
+      // ========================================
+      // auth 서브컬렉션 (Google OAuth 토큰)
+      // ========================================
+      match /auth/{provider} {
+        // 자신의 인증 토큰만 읽기 가능
+        allow read: if isOwner(email);
+
+        // 쓰기는 서버사이드(Admin SDK)에서만 가능
+        // 클라이언트에서는 절대 쓸 수 없음
+        allow write: if false;
+      }
+
+      // ========================================
+      // secrets 서브컬렉션 (Gemini API 키 등)
+      // ========================================
+      match /secrets/{secretType} {
+        // 자신의 시크릿만 읽기/쓰기 가능
+        allow read, write: if isOwner(email);
+
+        // 데이터 검증: 필수 필드 확인
+        allow create, update: if isOwner(email)
+          && request.resource.data.keys().hasAll(['ciphertext', 'iv', 'tag', 'createdAt'])
+          && request.resource.data.ciphertext is string
+          && request.resource.data.iv is string
+          && request.resource.data.tag is string
+          && request.resource.data.createdAt is number;
+      }
+    }
+
+    // ========================================
+    // 기본 규칙: 모든 다른 접근 거부
+    // ========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
