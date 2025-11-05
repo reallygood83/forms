@@ -179,26 +179,36 @@ ${text}
   console.log('[api/generate] Quiz - 응답 텍스트 길이:', generatedText.length);
   console.log('[api/generate] Quiz - 응답 텍스트 앞 200자:', generatedText.substring(0, 200));
 
-  // 🔧 ROOT CAUSE 해결: Code.gs의 검증된 JSON 파싱 로직 적용
+  // 🔧 ROOT CAUSE 해결: 여러 패턴으로 JSON 추출 시도
   let jsonString = generatedText.trim();
 
-  // 정규식 디버깅
-  const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-  console.log('[api/generate] Quiz - 정규식 매칭 결과:', jsonMatch ? '성공' : '실패');
-  if (jsonMatch) {
-    console.log('[api/generate] Quiz - jsonMatch[0] 길이:', jsonMatch[0]?.length);
-    console.log('[api/generate] Quiz - jsonMatch[1] 존재 여부:', !!jsonMatch[1]);
-    console.log('[api/generate] Quiz - jsonMatch[1] 길이:', jsonMatch[1]?.length);
-    console.log('[api/generate] Quiz - jsonMatch[1] 앞 100자:', jsonMatch[1]?.substring(0, 100));
+  // 패턴 1: ```json ... ``` 형식
+  let jsonMatch = jsonString.match(/```json\s*([\s\S]*?)\s*```/);
+
+  // 패턴 2: ``` ... ``` 형식 (json 키워드 없음)
+  if (!jsonMatch) {
+    jsonMatch = jsonString.match(/```\s*([\s\S]*?)\s*```/);
   }
 
-  if (jsonMatch && jsonMatch[1] && jsonMatch[1].trim()) {
+  console.log('[api/generate] Quiz - 정규식 매칭 결과:', jsonMatch ? '성공' : '실패');
+
+  if (jsonMatch && jsonMatch[1] && jsonMatch[1].trim().length > 0) {
     jsonString = jsonMatch[1].trim();
     console.log('[api/generate] Quiz - JSON 마크다운 블록 추출 성공');
     console.log('[api/generate] Quiz - 추출된 JSON 앞 100자:', jsonString.substring(0, 100));
   } else {
-    console.log('[api/generate] Quiz - JSON 마크다운 블록 없음, 전체 응답 사용');
-    console.log('[api/generate] Quiz - 원본 응답 앞 100자:', jsonString.substring(0, 100));
+    // 마크다운 블록이 없으면, { 로 시작하는 부분부터 추출
+    const jsonStart = jsonString.indexOf('{');
+    const jsonEnd = jsonString.lastIndexOf('}');
+
+    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+      jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
+      console.log('[api/generate] Quiz - JSON 객체 직접 추출 성공');
+      console.log('[api/generate] Quiz - 추출된 JSON 앞 100자:', jsonString.substring(0, 100));
+    } else {
+      console.log('[api/generate] Quiz - JSON 추출 실패, 원본 사용');
+      console.log('[api/generate] Quiz - 원본 응답 앞 200자:', jsonString.substring(0, 200));
+    }
   }
 
   let parsed;
