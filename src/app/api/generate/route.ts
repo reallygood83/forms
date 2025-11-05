@@ -125,7 +125,7 @@ async function buildGeminiQuizSpec(
     model: "gemini-2.5-flash",
     generationConfig: {
       temperature: difficulty === "hard" ? 0.8 : 0.7,
-      maxOutputTokens: 4096,
+      maxOutputTokens: 8192, // 🔧 FIX: 4096 → 8192 (상세한 해설과 여러 문제를 위해 충분한 토큰 확보)
     }
   });
 
@@ -524,7 +524,7 @@ async function buildGeminiSurveySpec(
     model: "gemini-2.5-flash",
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 4096,
+      maxOutputTokens: 8192, // 🔧 FIX: 4096 → 8192 (상세한 설문 항목과 설명을 위해 충분한 토큰 확보)
     }
   });
 
