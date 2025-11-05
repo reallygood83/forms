@@ -125,7 +125,7 @@ async function buildGeminiQuizSpec(
     model: "gemini-2.5-flash",
     generationConfig: {
       temperature: difficulty === "hard" ? 0.8 : 0.7,
-      maxOutputTokens: 8192, // 🔧 FIX: 4096 → 8192 (상세한 해설과 여러 문제를 위해 충분한 토큰 확보)
+      maxOutputTokens: 10000, // 🔧 FIX: 8192 → 10000 (최대 50문제 생성 지원, gemini-2.5-flash 최대치 활용)
     }
   });
 
@@ -140,8 +140,8 @@ ${typePrompt}
 필수 요구사항:
 1. 문항 개수는 정확히 ${questionCount}개여야 해
 2. 객관식 문항은 5개의 선택지를 포함해야 해
-3. 각 문제마다 상세한 해설을 작성해줘
-4. 해설에는 정답이 왜 정답인지, 오답은 왜 틀렸는지 명확히 설명해줘
+3. 각 문제마다 간결한 해설(1-2문장)을 작성해줘
+4. 해설은 1-2문장으로 간결하게 정답 이유만 설명해줘 (오답 설명은 불필요)
 
 결과는 반드시 아래와 같은 JSON 형식으로 반환해야 해:
 {
@@ -524,7 +524,7 @@ async function buildGeminiSurveySpec(
     model: "gemini-2.5-flash",
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 8192, // 🔧 FIX: 4096 → 8192 (상세한 설문 항목과 설명을 위해 충분한 토큰 확보)
+      maxOutputTokens: 10000, // 🔧 FIX: 8192 → 10000 (많은 문항 생성 지원, gemini-2.5-flash 최대치 활용)
     }
   });
 
