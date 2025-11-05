@@ -179,37 +179,61 @@ ${text}
   console.log('[api/generate] Quiz - 응답 텍스트 길이:', generatedText.length);
   console.log('[api/generate] Quiz - 응답 텍스트 앞 200자:', generatedText.substring(0, 200));
 
-  // 🔧 ROOT CAUSE 해결: 여러 패턴으로 JSON 추출 시도
+  // 🔧 ULTIMATE FIX: 마크다운 코드 블록 완전 제거 + 괄호 매칭
   let jsonString = generatedText.trim();
 
-  // 패턴 1: ```json ... ``` 형식
-  let jsonMatch = jsonString.match(/```json\s*([\s\S]*?)\s*```/);
+  console.log('[api/generate] Quiz - 원본 응답 전체 출력 (디버깅):', generatedText);
 
-  // 패턴 2: ``` ... ``` 형식 (json 키워드 없음)
-  if (!jsonMatch) {
-    jsonMatch = jsonString.match(/```\s*([\s\S]*?)\s*```/);
+  // Step 1: 마크다운 코드 블록 제거 (```json 또는 ``` 로 시작하는 경우)
+  if (jsonString.startsWith('```json')) {
+    jsonString = jsonString.substring(7); // '```json' 제거
+    console.log('[api/generate] Quiz - ```json 접두사 제거');
+  } else if (jsonString.startsWith('```')) {
+    jsonString = jsonString.substring(3); // '```' 제거
+    console.log('[api/generate] Quiz - ``` 접두사 제거');
   }
 
-  console.log('[api/generate] Quiz - 정규식 매칭 결과:', jsonMatch ? '성공' : '실패');
+  // Step 2: 마크다운 블록 종료 제거 (``` 로 끝나는 경우)
+  if (jsonString.endsWith('```')) {
+    jsonString = jsonString.substring(0, jsonString.length - 3);
+    console.log('[api/generate] Quiz - ``` 접미사 제거');
+  }
 
-  if (jsonMatch && jsonMatch[1] && jsonMatch[1].trim().length > 0) {
-    jsonString = jsonMatch[1].trim();
-    console.log('[api/generate] Quiz - JSON 마크다운 블록 추출 성공');
-    console.log('[api/generate] Quiz - 추출된 JSON 앞 100자:', jsonString.substring(0, 100));
-  } else {
-    // 마크다운 블록이 없으면, { 로 시작하는 부분부터 추출
-    const jsonStart = jsonString.indexOf('{');
-    const jsonEnd = jsonString.lastIndexOf('}');
+  jsonString = jsonString.trim();
 
-    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-      jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
-      console.log('[api/generate] Quiz - JSON 객체 직접 추출 성공');
-      console.log('[api/generate] Quiz - 추출된 JSON 앞 100자:', jsonString.substring(0, 100));
-    } else {
-      console.log('[api/generate] Quiz - JSON 추출 실패, 원본 사용');
-      console.log('[api/generate] Quiz - 원본 응답 앞 200자:', jsonString.substring(0, 200));
+  // Step 3: 첫 번째 { 부터 시작하도록 보장
+  const firstBrace = jsonString.indexOf('{');
+  if (firstBrace > 0) {
+    jsonString = jsonString.substring(firstBrace);
+    console.log('[api/generate] Quiz - 첫 번째 { 이전 내용 제거');
+  }
+
+  // Step 4: 괄호 균형 맞추기 - 마지막 완전한 } 찾기
+  let openBraces = 0;
+  let lastValidIndex = -1;
+
+  for (let i = 0; i < jsonString.length; i++) {
+    if (jsonString[i] === '{') {
+      openBraces++;
+    } else if (jsonString[i] === '}') {
+      openBraces--;
+      if (openBraces === 0) {
+        lastValidIndex = i;
+        break; // 첫 번째 완전한 JSON 객체 종료점 발견
+      }
     }
   }
+
+  if (lastValidIndex !== -1) {
+    jsonString = jsonString.substring(0, lastValidIndex + 1);
+    console.log('[api/generate] Quiz - 괄호 매칭으로 JSON 추출 완료');
+  } else {
+    console.log('[api/generate] Quiz - 괄호 매칭 실패, 전체 문자열 사용');
+  }
+
+  console.log('[api/generate] Quiz - 최종 추출된 JSON 길이:', jsonString.length);
+  console.log('[api/generate] Quiz - 최종 JSON 앞 200자:', jsonString.substring(0, 200));
+  console.log('[api/generate] Quiz - 최종 JSON 뒤 200자:', jsonString.substring(Math.max(0, jsonString.length - 200)));
 
   let parsed;
   try {
