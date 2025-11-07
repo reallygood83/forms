@@ -160,7 +160,7 @@ export default function PrivacyPage() {
                   <ul className="list-disc list-inside space-y-1 text-gray-700 ml-2">
                     <li><strong>TLS 1.3 암호화:</strong> 모든 데이터 전송은 최신 TLS 1.3 프로토콜을 사용하여 암호화됩니다.</li>
                     <li><strong>HTTPS 강제:</strong> Vercel 플랫폼을 통해 모든 HTTP 요청이 자동으로 HTTPS로 리다이렉트됩니다.</li>
-                    <li><strong>인증서 관리:</strong> Let's Encrypt SSL/TLS 인증서를 통한 안전한 연결 보장</li>
+                    <li><strong>인증서 관리:</strong> Let&apos;s Encrypt SSL/TLS 인증서를 통한 안전한 연결 보장</li>
                   </ul>
                 </div>
 
