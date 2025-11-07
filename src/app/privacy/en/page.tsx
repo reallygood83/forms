@@ -128,7 +128,7 @@ export default function PrivacyPageEN() {
                     </tr>
                     <tr>
                       <td className="border border-blue-300 p-2"><code className="text-xs">drive.file</code></td>
-                      <td className="border border-blue-300 p-2">Restricted</td>
+                      <td className="border border-blue-300 p-2">Non-sensitive</td>
                       <td className="border border-blue-300 p-2">Access only app-created Forms files</td>
                     </tr>
                   </tbody>

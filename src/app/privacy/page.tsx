@@ -128,7 +128,7 @@ export default function PrivacyPage() {
                     </tr>
                     <tr>
                       <td className="border border-blue-300 p-2"><code className="text-xs">drive.file</code></td>
-                      <td className="border border-blue-300 p-2">제한적</td>
+                      <td className="border border-blue-300 p-2">비민감</td>
                       <td className="border border-blue-300 p-2">앱이 생성한 Forms 파일만 접근</td>
                     </tr>
                   </tbody>
