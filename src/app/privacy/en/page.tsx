@@ -22,7 +22,7 @@ export default function PrivacyPageEN() {
           <h1 className="text-3xl font-bold text-black mb-2 uppercase tracking-wide">
             Privacy Policy
           </h1>
-          <p className="text-sm text-gray-600 mb-8">Last Updated: January 7, 2025 | Google OAuth Verified</p>
+          <p className="text-sm text-gray-600 mb-8">Last Updated: November 7, 2025 | Google OAuth Verified</p>
 
           <div className="space-y-8">
             <section>
@@ -487,7 +487,7 @@ export default function PrivacyPageEN() {
                   <tbody>
                     <tr>
                       <td className="border border-gray-300 p-2">v2.0</td>
-                      <td className="border border-gray-300 p-2">2025-01-07</td>
+                      <td className="border border-gray-300 p-2">2025-11-07</td>
                       <td className="border border-gray-300 p-2">
                         Google OAuth verification compliance: Detailed specification of sensitive data protection mechanisms,
                         expanded explanation of user rights, clarification of third-party sharing
@@ -507,7 +507,7 @@ export default function PrivacyPageEN() {
           <div className="mt-12 pt-6 border-t-2 border-black bg-gray-50 p-6">
             <div className="text-center mb-4">
               <p className="text-sm font-bold text-gray-800 mb-2">
-                This Privacy Policy is effective from January 7, 2025.
+                This Privacy Policy is effective from November 7, 2025.
               </p>
               <p className="text-xs text-gray-600">
                 (Google OAuth Verification Compliant - Version v2.0)

@@ -22,7 +22,7 @@ export default function PrivacyPage() {
           <h1 className="text-3xl font-bold text-black mb-2 uppercase tracking-wide">
             개인정보처리방침
           </h1>
-          <p className="text-sm text-gray-600 mb-8">최종 업데이트: 2025년 1월 7일 | Google OAuth 검증 대응</p>
+          <p className="text-sm text-gray-600 mb-8">최종 업데이트: 2025년 11월 7일 | Google OAuth 검증 대응</p>
 
           <div className="space-y-8">
             <section>
@@ -487,7 +487,7 @@ export default function PrivacyPage() {
                   <tbody>
                     <tr>
                       <td className="border border-gray-300 p-2">v2.0</td>
-                      <td className="border border-gray-300 p-2">2025-01-07</td>
+                      <td className="border border-gray-300 p-2">2025-11-07</td>
                       <td className="border border-gray-300 p-2">
                         Google OAuth 검증 대응: 민감 데이터 보호 메커니즘 상세 명시,
                         사용자 권리 확대 설명, 제3자 제공 명확화
@@ -507,7 +507,7 @@ export default function PrivacyPage() {
           <div className="mt-12 pt-6 border-t-2 border-black bg-gray-50 p-6">
             <div className="text-center mb-4">
               <p className="text-sm font-bold text-gray-800 mb-2">
-                본 개인정보처리방침은 2025년 1월 7일부터 적용됩니다.
+                본 개인정보처리방침은 2025년 11월 7일부터 적용됩니다.
               </p>
               <p className="text-xs text-gray-600">
                 (Google OAuth 검증 대응 버전 v2.0)
