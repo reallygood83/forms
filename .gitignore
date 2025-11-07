@@ -43,6 +43,9 @@ yarn-error.log*
 *firebase-adminsdk*.json
 firebase-service-account*.json
 
+# Internal Security Documentation (SECURITY: Contains architecture details)
+SECURITY_DATA_PROTECTION.md
+
 # Vercel Environment Setup Documentation (contains sensitive info)
 DEPLOYMENT_GUIDE.md
 GITHUB_PUSH_GUIDE.md
