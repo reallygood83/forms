@@ -436,7 +436,7 @@ export default function PrivacyPage() {
                           카카오톡 오픈채팅 (24시간)
                         </a>
                       </li>
-                      <li>이메일: jpmjkim23@gmail.com</li>
+                      <li>이메일: usmjkim23@gmail.com</li>
                     </ul>
                   </div>
                 </div>

@@ -436,7 +436,7 @@ export default function PrivacyPageEN() {
                           KakaoTalk Open Chat (24/7)
                         </a>
                       </li>
-                      <li>Email: jpmjkim23@gmail.com</li>
+                      <li>Email: usmjkim23@gmail.com</li>
                     </ul>
                   </div>
                 </div>
