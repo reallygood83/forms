@@ -470,7 +470,7 @@ export default function PrivacyPage() {
                 <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 ml-2">
                   <li>변경 7일 전 홈페이지 공지사항에 게시</li>
                   <li>중요한 변경사항의 경우 이메일로 개별 통지</li>
-                  <li>변경 내용은 본 페이지 상단의 "최종 업데이트" 날짜로 확인 가능</li>
+                  <li>변경 내용은 본 페이지 상단의 &quot;최종 업데이트&quot; 날짜로 확인 가능</li>
                 </ul>
               </div>
 

@@ -160,7 +160,7 @@ export default function PrivacyPageEN() {
                   <ul className="list-disc list-inside space-y-1 text-gray-700 ml-2">
                     <li><strong>TLS 1.3 Encryption:</strong> All data transmission uses the latest TLS 1.3 protocol for encryption.</li>
                     <li><strong>HTTPS Enforcement:</strong> All HTTP requests are automatically redirected to HTTPS via Vercel platform.</li>
-                    <li><strong>Certificate Management:</strong> Secure connection guaranteed through Let's Encrypt SSL/TLS certificates</li>
+                    <li><strong>Certificate Management:</strong> Secure connection guaranteed through Let&apos;s Encrypt SSL/TLS certificates</li>
                   </ul>
                 </div>
 
@@ -449,7 +449,7 @@ export default function PrivacyPageEN() {
                   <ul className="list-disc list-inside ml-4 text-xs text-gray-700 space-y-1">
                     <li><strong>Privacy Complaint Center (Korea):</strong> 118 | <a href="https://privacy.kisa.or.kr" className="text-blue-600 underline">privacy.kisa.or.kr</a></li>
                     <li><strong>Personal Information Dispute Mediation Committee:</strong> 1833-6972 | <a href="https://www.kopico.go.kr" className="text-blue-600 underline">www.kopico.go.kr</a></li>
-                    <li><strong>Supreme Prosecutors' Office Cybercrime Investigation Division:</strong> 1301 | <a href="https://www.spo.go.kr" className="text-blue-600 underline">www.spo.go.kr</a></li>
+                    <li><strong>Supreme Prosecutors&apos; Office Cybercrime Investigation Division:</strong> 1301 | <a href="https://www.spo.go.kr" className="text-blue-600 underline">www.spo.go.kr</a></li>
                     <li><strong>Korean National Police Agency Cyber Bureau:</strong> 182 | <a href="https://cyberbureau.police.go.kr" className="text-blue-600 underline">cyberbureau.police.go.kr</a></li>
                   </ul>
                 </div>
@@ -470,7 +470,7 @@ export default function PrivacyPageEN() {
                 <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 ml-2">
                   <li>Posted on homepage notice board 7 days before changes</li>
                   <li>Individual email notification for significant changes</li>
-                  <li>Changes can be confirmed by the "Last Updated" date at the top of this page</li>
+                  <li>Changes can be confirmed by the &quot;Last Updated&quot; date at the top of this page</li>
                 </ul>
               </div>
 
