@@ -4,10 +4,7 @@ export const runtime = 'edge'
 
 export const alt = 'TeaBoard Forms - AI 기반 퀴즈 및 설문 생성기로 업무 시간을 90% 절감하세요'
 
-export const size = {
-  width: 1200,
-  height: 630,
-}
+// Size configuration is handled by the ImageResponse parameters
 
 export const contentType = 'image/png'
 
