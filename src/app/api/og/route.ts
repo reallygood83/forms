@@ -1,5 +1,4 @@
 import { ImageResponse } from 'next/og'
-import { NextRequest } from 'next/server'
 
 export const runtime = 'edge'
 
@@ -12,7 +11,7 @@ export const size = {
 
 export const contentType = 'image/png'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   return new ImageResponse(
     {
       type: 'div',
