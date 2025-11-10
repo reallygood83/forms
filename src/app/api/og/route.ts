@@ -2,16 +2,11 @@ import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
 
-export const alt = 'TeaBoard Forms - AI 기반 퀴즈 및 설문 생성기로 업무 시간을 90% 절감하세요'
-
-// Size configuration is handled by the ImageResponse parameters
-
-export const contentType = 'image/png'
-
 export async function GET() {
   return new ImageResponse(
     {
       type: 'div',
+      key: 'root',
       props: {
         style: {
           height: '100%',
@@ -29,6 +24,7 @@ export async function GET() {
         children: [
           {
             type: 'div',
+            key: 'title',
             props: {
               style: {
                 display: 'flex',
@@ -52,6 +48,7 @@ export async function GET() {
           },
           {
             type: 'div',
+            key: 'tagline',
             props: {
               style: {
                 display: 'flex',
@@ -73,13 +70,14 @@ export async function GET() {
               },
               children: [
                 'AI 기반 퀴즈 및 설문 생성기로',
-                { type: 'br', props: {} },
+                { type: 'br', key: 'br1', props: {} },
                 '업무 시간을 90% 절감하세요',
               ],
             },
           },
           {
             type: 'div',
+            key: 'features',
             props: {
               style: {
                 display: 'flex',
@@ -90,6 +88,7 @@ export async function GET() {
               children: [
                 {
                   type: 'div',
+                  key: 'feature1',
                   props: {
                     style: {
                       display: 'flex',
@@ -105,6 +104,7 @@ export async function GET() {
                     children: [
                       {
                         type: 'div',
+                        key: 'feature1-icon',
                         props: {
                           style: {
                           fontSize: '48px',
@@ -118,6 +118,7 @@ export async function GET() {
                       },
                       {
                         type: 'div',
+                        key: 'feature1-title',
                         props: {
                           style: {
                         fontSize: '20px',
@@ -136,6 +137,7 @@ export async function GET() {
                       },
                       {
                         type: 'div',
+                        key: 'feature1-desc',
                         props: {
                           style: {
                         fontSize: '14px',
@@ -146,7 +148,7 @@ export async function GET() {
                         alignItems: 'center',
                         justifyContent: 'center',
                       },
-                          children: ['AI가 자동으로', { type: 'br', props: {} }, '퀴즈와 설문 생성'],
+                          children: ['AI가 자동으로', { type: 'br', key: 'feature1-br', props: {} }, '퀴즈와 설문 생성'],
                         },
                       },
                     ],
@@ -154,6 +156,7 @@ export async function GET() {
                 },
                 {
                   type: 'div',
+                  key: 'feature2',
                   props: {
                     style: {
                       display: 'flex',
@@ -169,6 +172,7 @@ export async function GET() {
                     children: [
                       {
                         type: 'div',
+                        key: 'feature2-icon',
                         props: {
                           style: {
                           fontSize: '48px',
@@ -182,6 +186,7 @@ export async function GET() {
                       },
                       {
                         type: 'div',
+                        key: 'feature2-title',
                         props: {
                           style: {
                         fontSize: '20px',
@@ -200,6 +205,7 @@ export async function GET() {
                       },
                       {
                         type: 'div',
+                        key: 'feature2-desc',
                         props: {
                           style: {
                         fontSize: '14px',
@@ -210,7 +216,7 @@ export async function GET() {
                         alignItems: 'center',
                         justifyContent: 'center',
                       },
-                          children: ['Gemini AI 기반', { type: 'br', props: {} }, '스마트 문항 생성'],
+                          children: ['Gemini AI 기반', { type: 'br', key: 'feature2-br', props: {} }, '스마트 문항 생성'],
                         },
                       },
                     ],
@@ -218,6 +224,7 @@ export async function GET() {
                 },
                 {
                   type: 'div',
+                  key: 'feature3',
                   props: {
                     style: {
                       display: 'flex',
@@ -233,6 +240,7 @@ export async function GET() {
                     children: [
                       {
                         type: 'div',
+                        key: 'feature3-icon',
                         props: {
                           style: {
                           fontSize: '48px',
@@ -246,6 +254,7 @@ export async function GET() {
                       },
                       {
                         type: 'div',
+                        key: 'feature3-title',
                         props: {
                           style: {
                         fontSize: '20px',
@@ -264,6 +273,7 @@ export async function GET() {
                       },
                       {
                         type: 'div',
+                        key: 'feature3-desc',
                         props: {
                           style: {
                         fontSize: '14px',
@@ -274,7 +284,7 @@ export async function GET() {
                         alignItems: 'center',
                         justifyContent: 'center',
                       },
-                          children: ['Google Forms로', { type: 'br', props: {} }, '바로 내보내기'],
+                          children: ['Google Forms로', { type: 'br', key: 'feature3-br', props: {} }, '바로 내보내기'],
                         },
                       },
                     ],
@@ -285,6 +295,7 @@ export async function GET() {
           },
           {
             type: 'div',
+            key: 'footer',
             props: {
               style: {
                 position: 'absolute',
@@ -300,6 +311,7 @@ export async function GET() {
               children: [
                 {
                   type: 'div',
+                  key: 'footer-text',
                   props: {
                     style: {
                         fontSize: '18px',
@@ -321,7 +333,8 @@ export async function GET() {
       },
     },
     {
-      ...size,
+      width: 1200,
+      height: 630,
     }
   )
 }
