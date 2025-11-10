@@ -2,7 +2,7 @@
 
 import { useSession, signIn } from 'next-auth/react';
 import Link from 'next/link';
-import { Sparkles, LayoutDashboard, Youtube, MessageCircle, FileText } from 'lucide-react';
+import { Sparkles, LayoutDashboard, Youtube, MessageCircle } from 'lucide-react';
 
 export default function Home() {
   const { data: session, status } = useSession();
