@@ -3,204 +3,281 @@ import { ImageResponse } from '@vercel/og';
 
 async function generateOGImage() {
   const imageResponse = new ImageResponse(
-    {
-      type: 'div',
-      props: {
-        style: {
+    (
+      <div
+        style={{
           height: '100%',
           width: '100%',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#000000',
-          backgroundImage: 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)',
-        },
-        children: [
-          // Icon
-          {
-            type: 'div',
-            props: {
-              style: {
+          backgroundColor: '#fef3c7',
+          border: '4px solid #000000',
+          position: 'relative',
+          fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          boxShadow: '8px 8px 0px rgba(0, 0, 0, 1)',
+        }}
+      >
+        {/* Logo with Neo-Brutalism style */}
+        <div
+          style={{
+            fontSize: '64px',
+            fontWeight: '900',
+            color: '#000000',
+            marginBottom: '24px',
+            letterSpacing: '-0.02em',
+            textTransform: 'uppercase',
+            lineHeight: '1.1',
+            backgroundColor: '#ffffff',
+            border: '4px solid #000000',
+            padding: '20px 32px',
+            boxShadow: '6px 6px 0px rgba(0, 0, 0, 1)',
+            transform: 'rotate(-1deg)',
+          }}
+        >
+          TeaBoard Forms
+        </div>
+
+        {/* Main tagline with rotation */}
+        <div
+          style={{
+            fontSize: '32px',
+            color: '#000000',
+            fontWeight: '900',
+            textAlign: 'center',
+            maxWidth: '900px',
+            lineHeight: '1.3',
+            backgroundColor: '#fbbf24',
+            border: '4px solid #000000',
+            padding: '20px 28px',
+            boxShadow: '6px 6px 0px rgba(0, 0, 0, 1)',
+            transform: 'rotate(1deg)',
+            marginBottom: '40px',
+          }}
+        >
+          AI 기반 퀴즈 및 설문 생성기로
+          <br />
+          업무 시간을 90% 절감하세요
+        </div>
+
+        {/* Features with Neo-Brutalism cards */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '20px',
+            marginTop: '20px',
+          }}
+        >
+          {/* 빠른 생성 */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '24px 20px',
+              backgroundColor: '#fde047',
+              border: '4px solid #000000',
+              boxShadow: '8px 8px 0px rgba(0, 0, 0, 1)',
+              transform: 'rotate(-2deg)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '48px',
+                marginBottom: '12px',
                 display: 'flex',
-                width: '160px',
-                height: '160px',
-                backgroundColor: 'white',
-                borderRadius: '32px',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginBottom: '48px',
-                boxShadow: '0 20px 50px rgba(37, 99, 235, 0.3)',
-              },
-              children: {
-                type: 'svg',
-                props: {
-                  width: '100',
-                  height: '100',
-                  viewBox: '0 0 100 100',
-                  style: {
-                    fill: '#2563eb',
-                  },
-                  children: [
-                    {
-                      type: 'rect',
-                      props: { x: '20', y: '10', width: '60', height: '80', rx: '6', fill: '#2563eb' }
-                    },
-                    {
-                      type: 'rect',
-                      props: { x: '30', y: '25', width: '40', height: '5', rx: '2', fill: 'white' }
-                    },
-                    {
-                      type: 'rect',
-                      props: { x: '30', y: '40', width: '40', height: '5', rx: '2', fill: 'white' }
-                    },
-                    {
-                      type: 'rect',
-                      props: { x: '30', y: '55', width: '40', height: '5', rx: '2', fill: 'white' }
-                    },
-                    {
-                      type: 'circle',
-                      props: { cx: '68', cy: '78', r: '12', fill: 'white' }
-                    },
-                    {
-                      type: 'path',
-                      props: {
-                        d: 'M 64 78 L 67 81 L 72 76',
-                        stroke: '#2563eb',
-                        strokeWidth: '3',
-                        fill: 'none',
-                        strokeLinecap: 'round',
-                        strokeLinejoin: 'round',
-                      }
-                    },
-                  ],
-                },
-              },
-            },
-          },
-          // Title
-          {
-            type: 'div',
-            props: {
-              style: {
-                fontSize: '72px',
-                fontWeight: 'bold',
-                color: 'white',
-                marginBottom: '24px',
+              }}
+            >
+              ⚡
+            </div>
+            <div
+              style={{
+                fontSize: '20px',
+                fontWeight: '900',
+                color: '#000000',
+                marginBottom: '4px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
                 textAlign: 'center',
-                letterSpacing: '-0.02em',
-              },
-              children: 'Teaboard Forms',
-            },
-          },
-          // Subtitle
-          {
-            type: 'div',
-            props: {
-              style: {
-                fontSize: '36px',
-                color: '#94a3b8',
-                textAlign: 'center',
-                maxWidth: '900px',
-                lineHeight: 1.4,
-              },
-              children: 'AI 기반 구글폼 자동 생성',
-            },
-          },
-          // Features
-          {
-            type: 'div',
-            props: {
-              style: {
                 display: 'flex',
-                gap: '40px',
-                marginTop: '48px',
-              },
-              children: [
-                {
-                  type: 'div',
-                  props: {
-                    style: {
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      fontSize: '24px',
-                      color: '#2563eb',
-                    },
-                    children: [
-                      {
-                        type: 'div',
-                        props: {
-                          style: {
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: '#2563eb',
-                          },
-                        },
-                      },
-                      '퀴즈 자동 생성',
-                    ],
-                  },
-                },
-                {
-                  type: 'div',
-                  props: {
-                    style: {
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      fontSize: '24px',
-                      color: '#2563eb',
-                    },
-                    children: [
-                      {
-                        type: 'div',
-                        props: {
-                          style: {
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: '#2563eb',
-                          },
-                        },
-                      },
-                      '설문조사 생성',
-                    ],
-                  },
-                },
-                {
-                  type: 'div',
-                  props: {
-                    style: {
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      fontSize: '24px',
-                      color: '#2563eb',
-                    },
-                    children: [
-                      {
-                        type: 'div',
-                        props: {
-                          style: {
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: '#2563eb',
-                          },
-                        },
-                      },
-                      'Gemini AI 활용',
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              빠른 생성
+            </div>
+            <div
+              style={{
+                fontSize: '14px',
+                fontWeight: '700',
+                color: '#000000',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              AI가 자동으로
+              <br />
+              퀴즈와 설문 생성
+            </div>
+          </div>
+
+          {/* 정확한 분석 */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '24px 20px',
+              backgroundColor: '#86efac',
+              border: '4px solid #000000',
+              boxShadow: '8px 8px 0px rgba(0, 0, 0, 1)',
+              transform: 'rotate(1deg)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '48px',
+                marginBottom: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              🎯
+            </div>
+            <div
+              style={{
+                fontSize: '20px',
+                fontWeight: '900',
+                color: '#000000',
+                marginBottom: '4px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              정확한 분석
+            </div>
+            <div
+              style={{
+                fontSize: '14px',
+                fontWeight: '700',
+                color: '#000000',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              Gemini AI 기반
+              <br />
+              스마트 문항 생성
+            </div>
+          </div>
+
+          {/* 즉시 배포 */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '24px 20px',
+              backgroundColor: '#93c5fd',
+              border: '4px solid #000000',
+              boxShadow: '8px 8px 0px rgba(0, 0, 0, 1)',
+              transform: 'rotate(-1deg)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '48px',
+                marginBottom: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              📊
+            </div>
+            <div
+              style={{
+                fontSize: '20px',
+                fontWeight: '900',
+                color: '#000000',
+                marginBottom: '4px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              즉시 배포
+            </div>
+            <div
+              style={{
+                fontSize: '14px',
+                fontWeight: '700',
+                color: '#000000',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              Google Forms로
+              <br />
+              바로 내보내기
+            </div>
+          </div>
+        </div>
+
+        {/* URL footer with Neo-Brutalism style */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '30px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '12px 24px',
+            backgroundColor: '#ffffff',
+            border: '4px solid #000000',
+            boxShadow: '4px 4px 0px rgba(0, 0, 0, 1)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '18px',
+              fontWeight: '900',
+              color: '#000000',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            forms.teaboard.link
+          </div>
+        </div>
+      </div>
+    ),
     {
       width: 1200,
       height: 630,
@@ -209,7 +286,7 @@ async function generateOGImage() {
 
   const imageBuffer = await imageResponse.arrayBuffer();
   writeFileSync('public/opengraph-image.png', Buffer.from(imageBuffer));
-  console.log('✅ OG 이미지가 public/opengraph-image.png에 성공적으로 생성되었습니다!');
+  console.log('✅ Neo-Brutalism OG 이미지가 public/opengraph-image.png에 성공적으로 생성되었습니다!');
 }
 
 generateOGImage().catch(console.error);
