@@ -25,8 +25,11 @@ export const metadata: Metadata = {
   publisher: "Teaboard",
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon.ico", sizes: "any" }
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.ico", sizes: "16x16" },
+      { url: "/favicon-32.png", sizes: "32x32" },
+      { url: "/favicon-64.png", sizes: "64x64" },
+      { url: "/favicon.svg", type: "image/svg+xml" }
     ],
     apple: "/apple-touch-icon.png",
   },
@@ -39,7 +42,7 @@ export const metadata: Metadata = {
     siteName: "Teaboard Forms",
     images: [
       {
-        url: "https://forms.teaboard.link/api/og?v=20251110",
+        url: "https://forms.teaboard.link/api/og?v=20251110-2",
         width: 1200,
         height: 630,
         alt: "Teaboard Forms - AI 기반 구글폼 자동 생성",
@@ -50,7 +53,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Teaboard Forms - AI 기반 구글폼 자동 생성",
     description: "AI를 활용하여 퀴즈와 설문을 자동으로 생성하고 구글 폼으로 즉시 배포하세요.",
-    images: ["https://forms.teaboard.link/api/og?v=20251110"],
+    images: ["https://forms.teaboard.link/api/og?v=20251110-2"],
   },
 };
 
