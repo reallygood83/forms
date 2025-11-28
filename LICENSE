@@ -1,0 +1,86 @@
+# Proprietary License
+
+Copyright (c) 2025 김문정 (Kim Moon Jung) - 안양 박달초등학교
+
+All rights reserved.
+
+## 저작권 안내 (Copyright Notice)
+
+본 소프트웨어 및 관련 문서 파일("소프트웨어")은 저작권법에 의해 보호됩니다.
+
+### 사용 제한 (Restrictions)
+
+본 소프트웨어는 **독점 소프트웨어(Proprietary Software)** 입니다. 다음 행위는 저작권자의 명시적인 서면 허가 없이 **금지**됩니다:
+
+1. **복사(Copy)**: 소프트웨어의 전체 또는 일부를 복사하는 행위
+2. **수정(Modify)**: 소프트웨어의 소스 코드를 수정하거나 변경하는 행위
+3. **배포(Distribute)**: 소프트웨어를 제3자에게 배포하는 행위
+4. **재판매(Resell)**: 소프트웨어를 판매하거나 상업적으로 이용하는 행위
+5. **재라이센스(Sublicense)**: 소프트웨어에 대한 라이센스를 재부여하는 행위
+6. **파생 저작물(Derivative Works)**: 본 소프트웨어를 기반으로 파생 저작물을 만드는 행위
+
+### 허용 사항 (Permitted Use)
+
+- **보기(View)**: 공개된 저장소에서 소스 코드를 열람하는 행위
+- **학습(Study)**: 개인적 학습 목적으로 코드를 연구하는 행위
+- **참조(Reference)**: 교육 목적으로 코드를 참조하는 행위
+
+단, 위 허용 사항은 소프트웨어의 복사, 수정, 배포를 포함하지 않습니다.
+
+### 면책 조항 (Disclaimer)
+
+본 소프트웨어는 "있는 그대로(AS IS)" 제공되며, 명시적이든 묵시적이든 어떠한 종류의 보증도 제공하지 않습니다. 이는 상품성, 특정 목적에의 적합성 및 비침해에 대한 보증을 포함하되 이에 국한되지 않습니다.
+
+어떠한 경우에도 저작권자는 본 소프트웨어의 사용 또는 기타 거래와 관련하여 발생하는 계약, 불법 행위 또는 기타 행위에서 발생하는 청구, 손해 또는 기타 책임에 대해 책임을 지지 않습니다.
+
+### 연락처 (Contact)
+
+라이센스 관련 문의 또는 사용 허가 요청:
+- **이메일**: jpmjkim23@gmail.com
+- **카카오톡**: https://open.kakao.com/o/gubGYQ7g
+- **GitHub**: https://github.com/reallygood83/forms4labs
+
+### 기술 정보 (Technical Information)
+
+- **프로젝트명**: TeaBoard Forms (AI 기반 퀴즈/설문 생성기)
+- **기술 스택**: Next.js, TypeScript, Google Gemini AI, Google Forms API
+- **개발 시작**: 2024년
+- **최종 수정**: 2025년 1월
+
+---
+
+## English Translation
+
+This software and associated documentation files (the "Software") are protected by copyright law.
+
+### Restrictions
+
+This Software is **Proprietary Software**. The following actions are **prohibited** without explicit written permission from the copyright holder:
+
+1. **Copy**: Copying all or part of the Software
+2. **Modify**: Modifying or altering the Software's source code
+3. **Distribute**: Distributing the Software to third parties
+4. **Resell**: Selling or commercially exploiting the Software
+5. **Sublicense**: Sublicensing the Software
+6. **Derivative Works**: Creating derivative works based on this Software
+
+### Permitted Use
+
+- **View**: Viewing source code in the public repository
+- **Study**: Studying the code for personal learning purposes
+- **Reference**: Referencing the code for educational purposes
+
+Note: These permitted uses do not include copying, modifying, or distributing the Software.
+
+### Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+### Contact
+
+For licensing inquiries or permission requests:
+- **Email**: jpmjkim23@gmail.com
+- **KakaoTalk**: https://open.kakao.com/o/gubGYQ7g
+- **GitHub**: https://github.com/reallygood83/forms4labs
