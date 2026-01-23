@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
+
 export const alt = 'Teaboard Forms - AI 기반 구글폼 자동 생성';
 export const size = {
   width: 1200,

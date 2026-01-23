@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og'
 
-export const runtime = 'edge'
+// Removed: export const runtime = 'edge' - Not compatible with generateImageMetadata in Next.js 16
 
 export const contentType = 'image/png'
 
@@ -43,4 +43,3 @@ export default function Icon({ id }: { id: string }) {
     { width: size, height: size }
   )
 }
-
