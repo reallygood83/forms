@@ -318,14 +318,14 @@ export default function CreatePage() {
                         <Input
                           type="number"
                           min="1"
-                          max="30"
+                          max="20"
                           placeholder="문항 수 입력"
                           value={customCount}
                           onChange={(e) => {
                             const value = e.target.value;
                             setCustomCount(value);
                             const num = parseInt(value);
-                            if (num >= 1 && num <= 30) {
+                            if (num >= 1 && num <= 20) {
                               setQuizData({...quizData, count: num});
                             }
                           }}
@@ -474,14 +474,14 @@ export default function CreatePage() {
                         <Input
                           type="number"
                           min="1"
-                          max="50"
+                          max="20"
                           placeholder="질문 수 입력"
                           value={customSurveyCount}
                           onChange={(e) => {
                             const value = e.target.value;
                             setCustomSurveyCount(value);
                             const num = parseInt(value);
-                            if (num >= 1 && num <= 50) {
+                            if (num >= 1 && num <= 20) {
                               setSurveyData({...surveyData, numQuestions: num});
                             }
                           }}

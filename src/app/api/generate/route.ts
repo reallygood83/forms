@@ -4,8 +4,19 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 import { authOptions } from "@/lib/auth";
 import type { FormSpec } from "@/lib/form-spec";
+import {
+  asText,
+  buildTopicOptions,
+  normalizeQuizQuestions,
+  normalizeSurveyQuestions,
+  pickSentence,
+  splitSentences,
+} from "@/lib/generation-quality";
 
 type GenerationSource = "gemini" | "template" | "gemini-fallback";
+
+const GEMINI_MODEL = "gemini-3.1-flash-lite";
+const MAX_OUTPUT_TOKENS = 8192;
 
 function clampQuestionCount(value: unknown, fallback: number) {
   const numeric = Number(value);
@@ -13,6 +24,68 @@ function clampQuestionCount(value: unknown, fallback: number) {
     return Math.max(1, Math.min(Math.trunc(numeric), 20));
   }
   return fallback;
+}
+
+function extractJsonObject(text: string, label: string): Record<string, unknown> {
+  const trimmed = text.trim();
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  let jsonString = (fenced?.[1] ?? trimmed).trim();
+
+  const firstBrace = jsonString.indexOf("{");
+  const lastBrace = jsonString.lastIndexOf("}");
+  if (firstBrace >= 0 && lastBrace > firstBrace) {
+    jsonString = jsonString.slice(firstBrace, lastBrace + 1);
+  }
+
+  try {
+    const parsed = JSON.parse(jsonString);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("JSON object expected");
+    }
+    return parsed as Record<string, unknown>;
+  } catch (parseError) {
+    throw new Error(
+      `${label} 응답을 JSON으로 파싱하는 중 오류 발생: ${
+        parseError instanceof Error ? parseError.message : "Unknown error"
+      }`,
+    );
+  }
+}
+
+async function generateJsonText(
+  apiKey: string,
+  prompt: string,
+  temperature: number,
+  label: string,
+) {
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: GEMINI_MODEL,
+    systemInstruction:
+      "You are an expert Korean education assessment designer. Think through the input privately, then return only valid JSON matching the requested shape.",
+    generationConfig: {
+      temperature,
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
+      responseMimeType: "application/json",
+    },
+  });
+
+  console.log(`[api/generate] ${label} - Gemini ${GEMINI_MODEL} 호출 시작`);
+  const result = await model.generateContent(prompt);
+  const response = result.response;
+  const candidates = response.candidates;
+  if (!candidates?.length) {
+    throw new Error("Gemini API 응답에 콘텐츠가 없습니다.");
+  }
+
+  const finishReason = candidates[0]?.finishReason;
+  if (finishReason && finishReason !== "STOP" && finishReason !== "MAX_TOKENS") {
+    throw new Error(`콘텐츠 생성이 예기치 않게 중단되었습니다. 이유: ${finishReason}`);
+  }
+
+  const text = response.text();
+  console.log(`[api/generate] ${label} - 응답 텍스트 길이:`, text.length);
+  return text;
 }
 
 function buildFallbackQuizSpec(data: Record<string, unknown> | null): FormSpec {
@@ -28,35 +101,42 @@ function buildFallbackQuizSpec(data: Record<string, unknown> | null): FormSpec {
   // 100점 만점 시스템: 문항수에 따라 배점 자동 계산
   const pointsPerQuestion = Math.round(100 / questionCount);
 
-  const excerpt =
-    typeof text === "string" && text.length > 0
-      ? text.slice(0, 120)
-      : undefined;
+  const topic = asText(title, "학습 내용");
+  const sentences = splitSentences(text);
+  const excerpt = sentences[0] ?? asText(text, topic).slice(0, 120);
 
-  const makeMultipleChoice = (index: number) => ({
-    type: "multiple_choice" as const,
-    title: `${index + 1}. ${title || "문항"} (객관식)`,
-    description: excerpt,
-    required: true,
-    options: ["보기 1", "보기 2", "보기 3", "보기 4", "보기 5"],
-    grading: {
-      pointValue: pointsPerQuestion,
-      correctAnswers: ["보기 1"],
-      explanation: "정답과 해설은 생성 후 자유롭게 수정하세요.",
-    },
-  });
+  const makeMultipleChoice = (index: number) => {
+    const sentence = pickSentence(sentences, index, excerpt);
+    const correct = sentence.endsWith(".") ? sentence.slice(0, -1) : sentence;
+    return {
+      type: "multiple_choice" as const,
+      title: `${index + 1}. 다음 중 ${topic}에 대한 설명으로 알맞은 것은?`,
+      description: excerpt,
+      required: true,
+      options: buildTopicOptions(topic, correct),
+      shuffleOptions: true,
+      grading: {
+        pointValue: pointsPerQuestion,
+        correctAnswers: [correct],
+        explanation: `원문에서 확인할 수 있는 핵심 설명은 "${correct}"입니다.`,
+      },
+    };
+  };
 
-  const makeShortAnswer = (index: number) => ({
-    type: "short_answer" as const,
-    title: `${index + 1}. ${title || "문항"} (단답형)`,
-    description: excerpt,
-    required: true,
-    grading: {
-      pointValue: pointsPerQuestion,
-      expectedAnswer: "정답 예시를 입력해 주세요.",
-      explanation: "정답 기준은 생성 후 직접 보완하세요.",
-    },
-  });
+  const makeShortAnswer = (index: number) => {
+    const sentence = pickSentence(sentences, index, excerpt);
+    return {
+      type: "short_answer" as const,
+      title: `${index + 1}. ${topic}에서 중요한 내용을 한 문장으로 설명해 보세요.`,
+      description: excerpt,
+      required: true,
+      grading: {
+        pointValue: pointsPerQuestion,
+        expectedAnswer: sentence,
+        explanation: `답안에는 "${sentence}"의 핵심 의미가 포함되어야 합니다.`,
+      },
+    };
+  };
 
   const items = Array.from({ length: questionCount }).map((_, index) => {
     if (questionType === "multiple_choice") return makeMultipleChoice(index);
@@ -120,19 +200,15 @@ async function buildGeminiQuizSpec(
     typePrompt = "모든 문항을 단답형으로 만들어줘.";
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    generationConfig: {
-      temperature: difficulty === "hard" ? 0.8 : 0.7,
-      maxOutputTokens: 8192, // gemini-2.0-flash max output
-    }
-  });
-
   const prompt = `
-다음 텍스트를 바탕으로 '${grade}' 수준에 맞는 퀴즈를 총 ${questionCount}개 생성해줘.
-퀴즈 제목은 '${title}'이야.
-각 문제마다 반드시 해설을 포함해줘.
+역할: 한국 교사를 돕는 평가 문항 설계 전문가.
+
+입력 텍스트가 짧거나 단순해도 바로 얕은 문제를 만들지 말고, 먼저 핵심 개념, 학년 수준, 오개념 가능성, 문항 난이도 흐름을 내부적으로 추론한 뒤 퀴즈를 설계해줘.
+추론 과정은 출력하지 말고 최종 JSON만 반환해.
+
+퀴즈 제목: ${title}
+대상 학년: ${grade}
+문항 수: 정확히 ${questionCount}개
 
 ${difficultyPrompt}
 ${typePrompt}
@@ -140,10 +216,14 @@ ${typePrompt}
 필수 요구사항:
 1. 문항 개수는 정확히 ${questionCount}개여야 해
 2. 객관식 문항은 5개의 선택지를 포함해야 해
-3. 각 문제마다 간결한 해설(1-2문장)을 작성해줘
-4. 해설은 1-2문장으로 간결하게 정답 이유만 설명해줘 (오답 설명은 불필요)
+3. 각 문항은 하나의 학습 목표만 평가하고, 원본 텍스트의 단순 복붙이 아니라 이해, 적용, 구분, 추론 중 하나를 평가해야 해
+4. 객관식 오답은 그럴듯하지만 명확히 틀린 선택지로 만들고, 선택지 길이와 문체를 비슷하게 맞춰
+5. 모든 문항에는 학생이 바로 배울 수 있는 1-2문장 해설을 포함해
+6. 쉬운 문항에서 어려운 문항으로 자연스럽게 배치해
+7. 질문은 한국어로 명확하고 짧게 작성해
+8. 부정형/이중부정 질문, "모두 정답", "정답 없음" 선택지는 사용하지 마
 
-결과는 반드시 아래와 같은 JSON 형식으로 반환해야 해:
+JSON 형식:
 {
   "quizTitle": "${title}",
   "questions": [
@@ -168,144 +248,17 @@ ${text}
 --- 텍스트 끝 ---
 `;
 
-  console.log('[api/generate] Quiz - Gemini API 호출 시작...');
-  const result = await model.generateContent(prompt);
-  console.log('[api/generate] Quiz - generateContent 완료');
-
-  const response = await result.response;
-  console.log('[api/generate] Quiz - response 객체 획득');
-
-  const generatedText = response.text();
-  console.log('[api/generate] Quiz - 응답 텍스트 길이:', generatedText.length);
-  console.log('[api/generate] Quiz - 응답 텍스트 앞 200자:', generatedText.substring(0, 200));
-
-  // 🔧 ULTIMATE FIX: 마크다운 코드 블록 완전 제거 + 괄호 매칭
-  let jsonString = generatedText.trim();
-
-  console.log('[api/generate] Quiz - 원본 응답 전체 출력 (디버깅):', generatedText);
-
-  // Step 1: 마크다운 코드 블록 제거 (```json 또는 ``` 로 시작하는 경우)
-  if (jsonString.startsWith('```json')) {
-    jsonString = jsonString.substring(7); // '```json' 제거
-    console.log('[api/generate] Quiz - ```json 접두사 제거');
-  } else if (jsonString.startsWith('```')) {
-    jsonString = jsonString.substring(3); // '```' 제거
-    console.log('[api/generate] Quiz - ``` 접두사 제거');
-  }
-
-  // Step 2: 마크다운 블록 종료 제거 (``` 로 끝나는 경우)
-  if (jsonString.endsWith('```')) {
-    jsonString = jsonString.substring(0, jsonString.length - 3);
-    console.log('[api/generate] Quiz - ``` 접미사 제거');
-  }
-
-  jsonString = jsonString.trim();
-
-  // Step 3: 첫 번째 { 부터 시작하도록 보장
-  const firstBrace = jsonString.indexOf('{');
-  if (firstBrace > 0) {
-    jsonString = jsonString.substring(firstBrace);
-    console.log('[api/generate] Quiz - 첫 번째 { 이전 내용 제거');
-  }
-
-  // Step 4: 괄호 균형 맞추기 - 마지막 완전한 } 찾기
-  let openBraces = 0;
-  let lastValidIndex = -1;
-
-  for (let i = 0; i < jsonString.length; i++) {
-    if (jsonString[i] === '{') {
-      openBraces++;
-    } else if (jsonString[i] === '}') {
-      openBraces--;
-      if (openBraces === 0) {
-        lastValidIndex = i;
-        break; // 첫 번째 완전한 JSON 객체 종료점 발견
-      }
-    }
-  }
-
-  if (lastValidIndex !== -1) {
-    jsonString = jsonString.substring(0, lastValidIndex + 1);
-    console.log('[api/generate] Quiz - 괄호 매칭으로 JSON 추출 완료');
-  } else {
-    console.log('[api/generate] Quiz - 괄호 매칭 실패, 전체 문자열 사용');
-  }
-
-  console.log('[api/generate] Quiz - 최종 추출된 JSON 길이:', jsonString.length);
-  console.log('[api/generate] Quiz - 최종 JSON 앞 200자:', jsonString.substring(0, 200));
-  console.log('[api/generate] Quiz - 최종 JSON 뒤 200자:', jsonString.substring(Math.max(0, jsonString.length - 200)));
-
-  let parsed;
-  try {
-    parsed = JSON.parse(jsonString);
-    console.log('[api/generate] Quiz - JSON 파싱 성공');
-  } catch (parseError) {
-    console.error('[api/generate] Quiz - JSON 파싱 실패');
-    console.error('[api/generate] Quiz - 파싱 시도한 문자열:', jsonString.substring(0, 500));
-    throw new Error(`Gemini 응답을 JSON으로 파싱하는 중 오류 발생: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
-  }
+  const parsed = extractJsonObject(
+    await generateJsonText(apiKey, prompt, difficulty === "hard" ? 0.75 : 0.55, "Quiz"),
+    "Quiz",
+  );
   if (!parsed.questions || !Array.isArray(parsed.questions)) {
     throw new Error("Gemini 응답 형식이 올바르지 않습니다.");
   }
 
-  // 🚨 문항 개수 엄격 검증 (사용자 요청사항 반영)
-  const actualQuestionCount = parsed.questions.length;
-  if (actualQuestionCount !== questionCount) {
-    throw new Error(
-      `요청한 문항 개수(${questionCount}개)와 생성된 문항 개수(${actualQuestionCount}개)가 일치하지 않습니다. ` +
-      `다시 생성해주세요.`
-    );
-  }
-
-  // 🚨 해설 필수 검증 (학습 효과를 위한 필수 요소)
-  for (let i = 0; i < parsed.questions.length; i++) {
-    const question = parsed.questions[i];
-    if (!question.explanation || typeof question.explanation !== 'string' || question.explanation.trim().length < 10) {
-      throw new Error(
-        `${i + 1}번 문항의 해설이 누락되었거나 너무 짧습니다. ` +
-        `모든 문항에는 최소 10자 이상의 상세한 해설이 필요합니다. 다시 생성해주세요.`
-      );
-    }
-  }
-
-  // 100점 만점 시스템: 문항수에 따라 배점 자동 계산
-  const pointsPerQuestion = Math.round(100 / actualQuestionCount);
-
-  const items = parsed.questions
-    .map((question: Record<string, unknown>, index: number) => {
-      if (question.type === "multiple_choice") {
-        return {
-          type: "multiple_choice" as const,
-          title: `${index + 1}. ${question.question}`,
-          required: true,
-          options: question.options ?? [],
-          shuffleOptions: true,
-          grading: {
-            pointValue: pointsPerQuestion,
-            correctAnswers: [question.correctAnswer],
-            explanation: question.explanation,
-          },
-        };
-      }
-      if (question.type === "short_answer") {
-        return {
-          type: "short_answer" as const,
-          title: `${index + 1}. ${question.question}`,
-          required: true,
-          grading: {
-            pointValue: pointsPerQuestion,
-            expectedAnswer: question.expectedAnswer,
-            explanation: question.explanation,
-          },
-        };
-      }
-      return null;
-    })
-    .filter(Boolean);
-
-  if (!items.length) {
-    throw new Error("생성된 문항이 없습니다.");
-  }
+  const questions = parsed.questions as Record<string, unknown>[];
+  const pointsPerQuestion = Math.round(100 / questionCount);
+  const items = normalizeQuizQuestions(questions, questionCount, pointsPerQuestion);
 
   // 개인정보 수집 필드 추가 (Apps Script 패턴 적용)
   const personalInfoItems: FormSpec["items"] = [];
@@ -362,68 +315,86 @@ function buildFallbackSurveySpec(data: Record<string, unknown> | null): FormSpec
   } = data ?? {};
 
   const questionCount = clampQuestionCount(numQuestions, 5);
+  const topic = asText(title, "설문 주제");
+  const goal = asText(purpose, `${topic}에 대한 의견 수집`);
+  const respondents = asText(audience, "응답자");
   const contextSnippet =
     typeof originalText === "string" && originalText.length > 0
       ? originalText.slice(0, 160)
       : undefined;
 
-  const templates = [
+  const templates: FormSpec["items"] = [
     {
       type: "multiple_choice" as const,
-      title: "1. 전체 만족도는 어느 정도였나요?",
-      description: purpose ? `목적: ${purpose}` : undefined,
+      title: `1. ${topic}에서 가장 도움이 된 부분은 무엇인가요?`,
+      description: `목적: ${goal}`,
       required: true,
       options: [
-        "매우 만족",
-        "만족",
-        "보통",
-        "불만족",
-        "매우 불만족",
+        "내용이 이해하기 쉬웠다",
+        "활동 방식이 흥미로웠다",
+        "친구들과 의견을 나눌 수 있었다",
+        "스스로 생각할 시간이 충분했다",
+        "특별히 도움이 된 부분은 없었다",
       ],
     },
     {
-      type: "paragraph" as const,
-      title: "2. 가장 좋았던 점은 무엇인가요?",
-      description: audience ? `대상: ${audience}` : undefined,
-      required: false,
+      type: "linear_scale" as const,
+      title: `2. ${topic}이(가) ${respondents}에게 적절했다고 느끼나요?`,
+      description: contextSnippet,
+      required: true,
+      scaleSettings: {
+        low: 1,
+        high: 5,
+        lowLabel: "전혀 그렇지 않다",
+        highLabel: "매우 그렇다",
+      },
     },
     {
       type: "paragraph" as const,
-      title: "3. 개선이 필요하다고 느낀 부분이 있다면 알려주세요.",
+      title: `3. ${topic}에서 좋았던 점을 구체적으로 적어주세요.`,
       description: contextSnippet,
       required: false,
     },
     {
-      type: "multiple_choice" as const,
-      title: "4. 다시 참여하거나 이용할 의향이 있나요?",
+      type: "checkbox" as const,
+      title: `4. ${topic}을(를) 개선하려면 어떤 부분이 필요할까요?`,
       required: true,
       options: [
-        "매우 그렇다",
-        "그렇다",
-        "잘 모르겠다",
-        "그렇지 않다",
-        "전혀 그렇지 않다",
+        "시간을 더 충분히 제공하기",
+        "예시나 안내를 더 자세히 제공하기",
+        "활동 난이도 조절하기",
+        "참여 방식 다양화하기",
+        "피드백 기회 늘리기",
       ],
     },
     {
       type: "paragraph" as const,
-      title: "5. 추가로 공유하고 싶은 의견이 있다면 자유롭게 작성해주세요.",
+      title: `5. ${goal}을 위해 추가로 나누고 싶은 의견이 있나요?`,
       required: false,
     },
     {
       type: "multiple_choice" as const,
-      title: "6. 지인에게 추천하고 싶은가요?",
+      title: `6. 다음 ${topic} 활동에 다시 참여하고 싶은가요?`,
       required: true,
-      options: ["매우 추천", "추천", "보통", "추천하지 않음", "절대 추천하지 않음"],
+      options: ["꼭 참여하고 싶다", "참여하고 싶다", "잘 모르겠다", "별로 참여하고 싶지 않다", "참여하고 싶지 않다"],
     },
     {
-      type: "paragraph" as const,
-      title: "7. 서비스/프로그램에서 가장 어려웠던 부분은 무엇인가요?",
+      type: "short_answer" as const,
+      title: `7. ${topic}을(를) 한 단어로 표현한다면 무엇인가요?`,
       required: false,
     },
   ];
 
-  const items: FormSpec["items"] = templates.slice(0, questionCount);
+  const items: FormSpec["items"] = Array.from({ length: questionCount }, (_, index) => {
+    const template = templates[index % templates.length];
+    if (index < templates.length) return template;
+    return {
+      type: "paragraph",
+      title: `${index + 1}. ${topic}에 대해 더 묻고 싶은 점이나 제안이 있다면 적어주세요.`,
+      description: `대상: ${respondents}`,
+      required: false,
+    };
+  });
 
   if (collectName) {
     items.push({
@@ -491,12 +462,14 @@ async function buildGeminiSurveySpec(
 ["1: 매우 그렇지 않다", "2: 그렇지 않다", "3: 보통", "4: 그렇다", "5: 매우 그렇다"]
 척도의 숫자와 레이블을 함께 제공해주세요.`;
   } else {
-    typeInstruction = `**매우 중요**: 반드시 다양한 질문 유형을 골고루 사용하세요!
+    typeInstruction = `질문 유형은 다양성 자체보다 측정 품질을 우선하세요.
 
 **필수 준수 사항**:
-- ${questionCount}개 질문 중 최소 3가지 이상의 서로 다른 유형을 사용해야 합니다
-- 같은 유형이 3개 이상 연속되지 않도록 하세요
-- 선형 배율(linear_scale) 질문을 최소 1개 이상 반드시 포함하세요
+- 만족도/동의 정도는 선형 배율(linear_scale)을 우선 사용하세요
+- 하나만 고르는 태도/선호 질문은 객관식(multiple_choice)을 사용하세요
+- 여러 답이 동시에 참일 때만 체크박스(checkbox)를 사용하세요
+- 자유 의견은 꼭 필요한 1-2개만 장문형(paragraph)으로 작성하세요
+- 같은 의미를 반복하는 질문을 만들지 마세요
 
 **각 유형별 사용 가이드**:
 1. **객관식(multiple_choice)**: 하나만 선택하는 질문 (예: 성별, 선호도 등)
@@ -508,25 +481,10 @@ async function buildGeminiSurveySpec(
 
 **권장 질문 구성 예시** (${questionCount}문항 기준):
 - 객관식: ${Math.max(1, Math.floor(questionCount * 0.3))}개
-- 체크박스: ${Math.max(1, Math.floor(questionCount * 0.2))}개
 - 선형 배율: ${Math.max(1, Math.floor(questionCount * 0.2))}개
-- 단답형: ${Math.max(1, Math.floor(questionCount * 0.15))}개
-- 장문형: ${Math.max(1, Math.floor(questionCount * 0.15))}개`;
+- 장문형: ${Math.max(1, Math.floor(questionCount * 0.15))}개
+- 체크박스/단답형: 필요할 때만 사용`;
   }
-
-  // 디버깅: API 키 확인
-  console.log('[api/generate] Survey - Gemini API 키 길이:', apiKey.length);
-  console.log('[api/generate] Survey - API 키 앞 4자:', apiKey.substring(0, 4));
-  console.log('[api/generate] Survey - API 키 뒤 4자:', apiKey.substring(apiKey.length - 4));
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 8192, // gemini-2.0-flash max output
-    }
-  });
 
   const prompt = `
 # 역할
@@ -535,6 +493,8 @@ async function buildGeminiSurveySpec(
 # 작업 지시
 아래 제공된 '설문 주제', '설문 목적', '대상 응답자', '원본 자료'를 바탕으로 Google Forms에 적합한 [${questionCount}]개의 설문 질문 초안을 생성해주세요.
 **각 질문 앞에는 반드시 '1. ', '2. '와 같이 순서대로 번호를 붙여주세요.**
+입력이 짧거나 모호하면 설문 목적, 응답자의 부담, 분석 가능한 결과 형태를 내부적으로 추론해 질문을 구체화하세요.
+추론 과정은 출력하지 말고 최종 JSON만 반환하세요.
 
 # 맥락 정보
 - 설문 주제: ${title}
@@ -550,6 +510,8 @@ ${typeInstruction}
 - 각 질문은 명확하고 이해하기 쉬워야 하며, 대상 응답자의 특성을 고려해주세요
 - 응답자가 솔직하고 구체적으로 답변할 수 있도록 질문을 구성해주세요
 - 질문 순서는 일반적/쉬운 질문에서 구체적/깊이 있는 질문으로 자연스럽게 진행되어야 합니다
+- 같은 의미를 반복하는 질문을 만들지 말고, 각 문항이 서로 다른 분석 관점을 갖도록 하세요
+- 선택지는 상호 배타적이고 응답자가 고르기 쉬운 표현으로 작성하세요
 
 ## 📋 상담 자료 생성 시 추가 가이드라인 (purpose에 "상담" 키워드 포함 시)
 ${purpose && (typeof purpose === 'string') && purpose.includes('상담') ? `
@@ -605,58 +567,12 @@ question_type은 반드시 다음 중 하나여야 합니다:
 - linear_scale (선형 배율)
 `;
 
-  console.log('[api/generate] Survey - Gemini API 호출 시작...');
   console.log('[api/generate] Survey - 프롬프트 길이:', prompt.length);
 
-  const result = await model.generateContent(prompt);
-  console.log('[api/generate] Survey - generateContent 완료');
-
-  const response = await result.response;
-  console.log('[api/generate] Survey - response 객체 획득');
-  console.log('[api/generate] Survey - response.candidates 존재 여부:', !!response.candidates);
-
-  // Code.gs 패턴: 응답 유효성 검증
-  const candidates = response.candidates;
-  if (!candidates || candidates.length === 0) {
-    console.error('[api/generate] Gemini 응답에 후보가 없음');
-    throw new Error("Gemini API 응답에 콘텐츠가 없습니다.");
-  }
-
-  const candidate = candidates[0];
-  const finishReason = candidate.finishReason;
-
-  // 종료 사유 확인
-  if (finishReason !== "STOP" && finishReason !== "MAX_TOKENS") {
-    console.error(`[api/generate] 예기치 않은 종료 사유: ${finishReason}`);
-    throw new Error(`콘텐츠 생성이 예기치 않게 중단되었습니다. 이유: ${finishReason}`);
-  }
-
-  // 응답 텍스트 추출
-  const responseText = response.text();
-  console.log('[api/generate] Survey - 응답 텍스트 길이:', responseText.length);
-  console.log('[api/generate] Survey - 응답 텍스트 앞 100자:', responseText.substring(0, 100));
-
-  // Code.gs 패턴: JSON 마크다운 블록 처리
-  let jsonString = responseText.trim();
-  const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-  if (jsonMatch && jsonMatch[1]) {
-    jsonString = jsonMatch[1].trim();
-    console.log('[api/generate] Survey - JSON 마크다운 블록 추출 성공');
-  } else {
-    console.log('[api/generate] Warning: JSON response not in markdown block');
-  }
-
-  // Code.gs 패턴: 상세한 에러 로깅과 함께 JSON 파싱
-  let parsed;
-  try {
-    parsed = JSON.parse(jsonString);
-    console.log('[api/generate] Survey - JSON 파싱 성공');
-  } catch (parseError) {
-    console.error('[api/generate] JSON 파싱 실패');
-    console.error('[api/generate] 원본 응답:', responseText);
-    console.error('[api/generate] 파싱 시도한 JSON:', jsonString);
-    throw new Error(`Gemini 응답을 JSON으로 파싱하는 중 오류 발생: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
-  }
+  const parsed = extractJsonObject(
+    await generateJsonText(apiKey, prompt, 0.55, "Survey"),
+    "Survey",
+  );
 
   if (!parsed.questions || !Array.isArray(parsed.questions)) {
     console.error('[api/generate] 응답 형식 오류 - questions 배열 없음');
@@ -664,103 +580,9 @@ question_type은 반드시 다음 중 하나여야 합니다:
     throw new Error("Gemini 응답 형식이 올바르지 않습니다 (questions 배열이 없음).");
   }
 
-  console.log(`[api/generate] 파싱 성공: ${parsed.questions.length}개 질문 생성됨`);
-
-
-  const items: FormSpec["items"] = parsed.questions
-    .map((question: Record<string, unknown>) => {
-      const questionText = String(question.question_text || question.question || "");
-      const questionType = String(question.question_type || "paragraph");
-      const options = Array.isArray(question.options) ? question.options : [];
-      const isRequired = question.is_required !== false;
-
-      if (questionType === "multiple_choice") {
-        return {
-          type: "multiple_choice" as const,
-          title: questionText,
-          required: isRequired,
-          options: options.map(String),
-        };
-      }
-      if (questionType === "checkbox") {
-        return {
-          type: "checkbox" as const,
-          title: questionText,
-          required: isRequired,
-          options: options.map(String),
-        };
-      }
-      if (questionType === "dropdown") {
-        return {
-          type: "dropdown" as const,
-          title: questionText,
-          required: isRequired,
-          options: options.map(String),
-        };
-      }
-      if (questionType === "short_answer") {
-        return {
-          type: "short_answer" as const,
-          title: questionText,
-          required: isRequired,
-        };
-      }
-      if (questionType === "paragraph") {
-        return {
-          type: "paragraph" as const,
-          title: questionText,
-          required: isRequired,
-        };
-      }
-      if (questionType === "linear_scale") {
-        // Parse scale settings from options array
-        // Expected format: ["1: label1", "2: label2", ..., "5: label5"]
-        let low = 1;
-        let high = 5;
-        let lowLabel = "";
-        let highLabel = "";
-
-        if (options.length > 0) {
-          const parseScaleOption = (optStr: string) => {
-            const match = String(optStr).match(/^(\d+)\s*[:=-]?\s*(.*)/);
-            if (match) {
-              return { bound: parseInt(match[1], 10), label: match[2].trim() };
-            }
-            return null;
-          };
-
-          const firstParsed = parseScaleOption(String(options[0]));
-          const lastParsed = parseScaleOption(String(options[options.length - 1]));
-
-          if (firstParsed) {
-            low = firstParsed.bound;
-            lowLabel = firstParsed.label;
-          }
-          if (lastParsed) {
-            high = lastParsed.bound;
-            highLabel = lastParsed.label;
-          }
-        }
-
-        return {
-          type: "linear_scale" as const,
-          title: questionText,
-          required: isRequired,
-          scaleSettings: {
-            low,
-            high,
-            lowLabel,
-            highLabel,
-          },
-        };
-      }
-      return null;
-    })
-    .filter(Boolean);
-
-  if (!items.length) {
-    throw new Error("생성된 문항이 없습니다.");
-  }
+  const questions = parsed.questions as Record<string, unknown>[];
+  console.log(`[api/generate] 파싱 성공: ${questions.length}개 질문 생성됨`);
+  const items = normalizeSurveyQuestions(questions, questionCount);
 
   // Add personal info fields at the BEGINNING (Apps Script pattern)
   const personalInfoItems: FormSpec["items"] = [];
